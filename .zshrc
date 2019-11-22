@@ -38,9 +38,6 @@ function findlnfrom {
 #
 chpwd () {print -Pn "\e]2; %~/ \a"}
 
-# rbenv
-eval "$(rbenv init -)"
-
 # fzf
 export FZF_DEFAULT_OPTS="--preview 'bat --color=always --style=header,grid --line-range :100 {}' --height 80% --reverse --border"
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'" # show directory tree
@@ -76,3 +73,7 @@ autoload -Uz _zplugin
 zplugin light zsh-users/zsh-autosuggestions
 zplugin light zdharma/fast-syntax-highlighting
 zplugin light bhilburn/powerlevel9k
+
+# rbenv
+eval "$(rbenv init -)"
+
