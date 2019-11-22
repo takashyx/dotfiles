@@ -55,7 +55,7 @@ bindkey "^b" fzf-checkout-branch
 
 # alias
 
-alias ls='ls -alF'
+alias ls='ls -alFG'
 alias cp='cp -i' # safety
 alias mv='mv -i' # safety
 alias rm='rm -i' # safety
