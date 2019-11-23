@@ -75,7 +75,8 @@ zplugin light zsh-users/zsh-autosuggestions
 zplugin light zdharma/fast-syntax-highlighting
 zplugin light bhilburn/powerlevel9k
 
-
+# thefuck
+eval $(thefuck --alias)
 fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
 
 autoload -U compinit
