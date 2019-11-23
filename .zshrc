@@ -75,6 +75,12 @@ zplugin light zsh-users/zsh-autosuggestions
 zplugin light zdharma/fast-syntax-highlighting
 zplugin light bhilburn/powerlevel9k
 
+
+fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
+
+autoload -U compinit
+compinit -u
+
 # rbenv
 eval "$(rbenv init -)"
 
