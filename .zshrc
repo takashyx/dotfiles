@@ -71,6 +71,8 @@ autoload -Uz _zplugin
 ### End of Zplugin installer's chunk
 
 zplugin light zsh-users/zsh-completions
+
+zplugin ice wait "!0" atload "_zsh_autosuggest_start"
 zplugin light zsh-users/zsh-autosuggestions
 zplugin light zdharma/fast-syntax-highlighting
 zplugin light bhilburn/powerlevel9k
