@@ -74,8 +74,19 @@ zplugin light zsh-users/zsh-completions
 
 zplugin ice wait "!0" atload "_zsh_autosuggest_start"
 zplugin light zsh-users/zsh-autosuggestions
+zplugin light marzocchi/zsh-notify
 zplugin light zdharma/fast-syntax-highlighting
 zplugin light bhilburn/powerlevel9k
+
+# zsh-notify settings
+zstyle ':notify:*' command-complete-timeout 0
+zstyle ':notify:*' error-title "Command failed (in #{time_elapsed} seconds)"
+zstyle ':notify:*' success-title "Command finished (in #{time_elapsed} seconds)"
+zstyle ':notify:*' error-icon "/Users/takashyx/.img/ng.png"
+zstyle ':notify:*' success-icon "/Users/takashyx/.img/ok.png"
+zstyle ':notify:*' enable-on-ssh yes
+zstyle ':notify:*' error-sound "Glass"
+zstyle ':notify:*' success-sound "default"
 
 # thefuck
 eval $(thefuck --alias)
