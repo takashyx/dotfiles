@@ -1,7 +1,11 @@
 -- =====================================================================
 -- IME 自動オフ設定 (Mac / Windows 共通)
---   インサートモードを抜けてノーマルモードに戻ったとき、
---   IME を自動的に半角英数へ切り替える。
+--   以下のタイミングで IME を自動的に半角英数へ切り替える。
+--     1. インサートモードを抜けてノーマルモードに戻ったとき
+--     2. エディタ(コード画面)にフォーカスが入ったとき
+--     3. 別のファイル(タブ)やウィンドウに移ったとき
+--        (2, 3 はインサートモード等の文字入力中なら日本語入力継続の
+--         可能性があるためスキップ)
 --
 --   Mac    : macism (https://github.com/laishulu/macism)
 --   Windows: zenhan (https://github.com/iuchim/zenhan)
@@ -56,9 +60,20 @@ if ime_off_cmd then
     end
   end
 
-  vim.api.nvim_create_autocmd({ 'InsertLeave', 'CmdlineLeave' }, {
-    group = vim.api.nvim_create_augroup('ime-auto-off', { clear = true }),
-    callback = ime_off,
-    desc = 'ノーマルモード復帰時に IME をオフにする',
-  })
+  vim.api.nvim_create_autocmd(
+    { 'InsertLeave', 'CmdlineLeave', 'FocusGained', 'BufEnter', 'WinEnter' },
+    {
+      group = vim.api.nvim_create_augroup('ime-auto-off', { clear = true }),
+      callback = function(ev)
+        -- インサート/置換/ターミナルモード中は文字入力の最中なので、
+        -- モード遷移以外のイベントでは IME を切り替えない
+        if ev.event ~= 'InsertLeave' and ev.event ~= 'CmdlineLeave'
+            and vim.fn.mode():find('^[iRt]') then
+          return
+        end
+        ime_off()
+      end,
+      desc = 'ノーマルモード復帰時・フォーカス/バッファ/ウィンドウ移動時に IME をオフにする',
+    }
+  )
 end
