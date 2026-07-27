@@ -14,8 +14,11 @@ FONT_FAMILY="Moralerspace Neon HW"
 mkdir -p "$USER_DIR"
 if [ -e "$USER_DIR/settings.json" ] && [ ! -L "$USER_DIR/settings.json" ]; then
   if cmp -s "$USER_DIR/settings.json" "$MODULE_DIR/settings.json"; then
-    # リポジトリと同内容。退避すると既存の .bak を壊すのでしない
     echo "==> settings.json: 配置済み (最新)"
+  elif [ -e "$USER_DIR/settings.json.bak" ]; then
+    # dotfiles 導入前の設定を保持したいので、既存の .bak は上書きしない
+    echo "==> settings.json.bak は既にあるため退避をスキップします"
+    echo "    (未取り込みの変更があるなら update.sh を先に実行してください)"
   else
     mv "$USER_DIR/settings.json" "$USER_DIR/settings.json.bak"
     echo "==> 既存の settings.json を settings.json.bak に退避しました"

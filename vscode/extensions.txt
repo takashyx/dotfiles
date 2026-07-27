@@ -1,7 +1,6 @@
 # VSCode 拡張機能リスト (1 行 1 ID / # 始まりはコメント)
-#   更新方法: code --list-extensions > で書き出した内容に差し替える
-#     Mac:     code --list-extensions
-#     Windows: code --list-extensions
+#   このヘッダは update.sh / update.ps1 の実行後も維持される
+#   更新方法: bash update.sh (Mac) / .\update.ps1 (Windows)
 anthropic.claude-code
 asvetliakov.vscode-neovim
 betaversion.vscode-github-desktop

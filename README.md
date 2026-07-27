@@ -4,10 +4,12 @@ Mac / Windows 共通の設定ファイルをモジュール単位(フォルダ�
 
 ## 構成
 
-```
+``` text
 dotfiles/
-├── setup.sh        # エントリポイント (Mac): 各フォルダの setup.sh を順に実行
-├── setup.ps1       # エントリポイント (Windows): 各フォルダの setup.ps1 を順に実行
+├── setup.sh        # 配置エントリポイント (Mac): 各フォルダの setup.sh を順に実行
+├── setup.ps1       # 配置エントリポイント (Windows): 各フォルダの setup.ps1 を順に実行
+├── update.sh       # 取り込みエントリポイント (Mac): 各フォルダの update.sh を順に実行
+├── update.ps1      # 取り込みエントリポイント (Windows): 各フォルダの update.ps1 を順に実行
 ├── nvim/           # Neovim (vscode-neovim) モジュール
 │   ├── init.lua    # OS 共通設定 (IME 自動オフ)
 │   ├── setup.sh    # Mac 用: macism インストール + init.lua リンク
@@ -16,15 +18,25 @@ dotfiles/
 │   ├── settings.json   # OS 共通のユーザー設定
 │   ├── extensions.txt  # 拡張機能 ID 一覧
 │   ├── setup.sh    # Mac 用: 設定リンク + 拡張機能 + フォント (brew cask)
-│   └── setup.ps1   # Windows 用: 設定リンク + 拡張機能 + フォント (zip 展開)
+│   ├── setup.ps1   # Windows 用: 設定リンク + 拡張機能 + フォント (zip 展開)
+│   ├── update.sh   # Mac 用: 現在の設定 / 拡張機能をリポジトリへ取り込む
+│   └── update.ps1  # Windows 用: 同上
 └── autohotkey/     # AutoHotkey モジュール (Windows 専用)
     ├── alt-ime_and_leftshiftesc-tilda_ahk_v2.ahk  # Alt 空打ちで IME 切替 / LShift+Esc → ~
     ├── launch_leftshiftesc-tilda.bat              # .ahk 起動用ランチャ
     └── setup.ps1   # Windows 用: ~/dotfiles へ配置 + スタートアップ登録 (setup.sh なし = Mac ではスキップ)
 ```
 
-新しい設定を追加するときは、フォルダを作って `setup.sh` / `setup.ps1` を置くだけで
-エントリポイントから自動的に呼び出される。
+方向は 2 つあり、どちらもフォルダ単位で自動的に呼び出される。
+
+| コマンド | 方向 | 用途 |
+| --- | --- | --- |
+| `setup.sh` / `setup.ps1` | リポジトリ → マシン | 新しいマシンに設定を展開する |
+| `update.sh` / `update.ps1` | マシン → リポジトリ | 手元で変えた設定をリポジトリに取り込む |
+
+新しい設定を追加するときは、フォルダを作って `setup.sh` / `setup.ps1` を置くだけでよい。
+取り込みも自動化したければ、あわせて `update.sh` / `update.ps1` を置く
+(置かないモジュールは単にスキップされる)。
 
 ## セットアップ
 
@@ -51,6 +63,25 @@ powershell -ExecutionPolicy Bypass -File .\setup.ps1
 
 各モジュールが失敗しても残りは続行され、最後に結果がサマリー表示される
 (1つでも失敗があれば終了コード 1)。
+
+## 現在の設定の取り込み
+
+手元のマシンで変更した設定をリポジトリ側へ書き戻す (`setup` の逆方向)。
+
+Mac:
+
+```sh
+bash update.sh
+```
+
+Windows (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\update.ps1
+```
+
+書き戻すだけでコミットはしないので、`git diff` で差分を確認してからコミットする。
+変更が無いモジュールは「変更なし」と表示してファイルに触らないため、無駄な差分は出ない。
 
 ## nvim モジュール: IME 自動オフ
 
@@ -95,18 +126,23 @@ VSCode のユーザー設定・拡張機能・エディタフォントを Mac / 
      ダウンロードし、`%LOCALAPPDATA%\Microsoft\Windows\Fonts` へ配置 + HKCU へ登録
      (**管理者権限不要**。約 100MB のダウンロードが発生する。導入済みならスキップ)
 
-拡張機能リストを最新化するとき:
+`update.sh` / `update.ps1` の動作 (逆方向の取り込み):
 
-```sh
-code --list-extensions > vscode/extensions.txt
-```
+1. **`settings.json` を書き戻す**
+   - リンク運用ならリポジトリのファイル自体が既に書き換わっているので「取り込み不要」でスキップ
+   - コピー運用 (Windows でリンクを作れなかった場合) なら実ファイルをリポジトリへコピーする
+2. **`extensions.txt` を再生成**する
+   (`code --list-extensions` をソートして書き出し。先頭のコメント行は維持される)
 
 注意点:
 
-- `code` コマンドが PATH に無い場合、拡張機能の導入はスキップされる
+- `code` コマンドが PATH に無い場合、拡張機能の導入/取り込みはスキップされる
   (VSCode のコマンドパレットから `Shell Command: Install 'code' command in PATH` を実行する)
 - Windows で開発者モードも管理者権限も無い場合はリンクではなく**コピー**になる。
-  この場合は双方向の自動同期が効かないため、設定を変えたらリポジトリ側へ手動で反映すること
+  この場合は自動で双方向同期されないので、設定を変えたら `update.ps1` を実行してから
+  コミットすること
+- `.bak` は dotfiles 導入前の設定を残すためのものなので、既にある場合は上書きされない
+  (未取り込みの変更を消したくない場合は `update` を先に実行する)
 - Cursor (`%APPDATA%\Cursor\User`) は対象外。共有したくなったら同じ要領でパスを追加する
 
 ## autohotkey モジュール (Windows 専用)

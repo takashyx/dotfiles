@@ -15,10 +15,13 @@ $source = Join-Path $PSScriptRoot 'settings.json'
 
 if ((Test-Path $target) -and -not (Get-Item $target).LinkType) {
     if ((Get-FileHash $target).Hash -eq (Get-FileHash $source).Hash) {
-        # 前回コピー運用で配置したものと同内容。退避すると既存の .bak を壊すのでしない
         Write-Host '==> settings.json: 配置済み (最新)'
+    } elseif (Test-Path "$target.bak") {
+        # dotfiles 導入前の設定を保持したいので、既存の .bak は上書きしない
+        Write-Host '==> settings.json.bak は既にあるため退避をスキップします'
+        Write-Host '    (未取り込みの変更があるなら update.ps1 を先に実行してください)'
     } else {
-        Move-Item $target "$target.bak" -Force
+        Move-Item $target "$target.bak"
         Write-Host '==> 既存の settings.json を settings.json.bak に退避しました'
     }
 }
@@ -39,7 +42,8 @@ if ($null -eq $codeCmd) {
     Write-Host '==> 警告: code コマンドが見つからないため拡張機能をスキップします'
     Write-Host '    (VSCode の コマンドパレット > "Shell Command: Install ''code'' command in PATH" を実行してください)'
 } else {
-    $wanted = Get-Content (Join-Path $PSScriptRoot 'extensions.txt') |
+    # BOM なし UTF-8 を既定の Get-Content で読むと ANSI 扱いになるため明示する
+    $wanted = Get-Content (Join-Path $PSScriptRoot 'extensions.txt') -Encoding UTF8 |
         ForEach-Object { $_.Trim() } |
         Where-Object { $_ -and -not $_.StartsWith('#') }
     $installed = @(& $codeCmd.Source --list-extensions)
