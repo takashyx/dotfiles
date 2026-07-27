@@ -5,6 +5,10 @@ set -euo pipefail
 MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 USER_DIR="$HOME/Library/Application Support/Code/User"
 
+# code コマンド確認・有効化
+source "$MODULE_DIR/lib/ensure-code-command.sh"
+echo ""
+
 # settings.json の editor.fontFamily で指定しているフォント
 FONT_CASK="font-moralerspace-hw"
 FONT_FILE="MoralerspaceNeonHW-Regular.ttf"
@@ -30,7 +34,6 @@ echo "==> リンク作成: $USER_DIR/settings.json -> $MODULE_DIR/settings.json"
 # 2. 拡張機能のインストール (extensions.txt との差分のみ)
 if ! command -v code >/dev/null 2>&1; then
   echo "==> 警告: code コマンドが見つからないため拡張機能をスキップします"
-  echo "    (VSCode の コマンドパレット > \"Shell Command: Install 'code' command in PATH\" を実行してください)"
 else
   WANTED=()
   while IFS= read -r line; do

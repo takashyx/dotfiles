@@ -7,6 +7,10 @@ LIVE="$HOME/Library/Application Support/Code/User/settings.json"
 REPO="$MODULE_DIR/settings.json"
 TXT="$MODULE_DIR/extensions.txt"
 
+# code コマンド確認・有効化
+source "$MODULE_DIR/lib/ensure-code-command.sh"
+echo ""
+
 # 1. settings.json の取り込み
 if [ ! -e "$LIVE" ]; then
   echo "==> 警告: $LIVE が見つかりません (setup.sh 未実行?)"
