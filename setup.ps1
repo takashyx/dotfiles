@@ -26,6 +26,7 @@ foreach ($dir in (Get-ChildItem -Path $PSScriptRoot -Directory | Sort-Object Nam
 
 Write-Host ''
 Write-Host '========== セットアップ結果 ==========' -ForegroundColor Cyan
+
 if ($results.Count -eq 0) {
     Write-Host '  実行されたモジュールはありません'
 } else {
