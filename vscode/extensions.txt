@@ -1,0 +1,15 @@
+# VSCode 拡張機能リスト (1 行 1 ID / # 始まりはコメント)
+#   更新方法: code --list-extensions > で書き出した内容に差し替える
+#     Mac:     code --list-extensions
+#     Windows: code --list-extensions
+anthropic.claude-code
+asvetliakov.vscode-neovim
+betaversion.vscode-github-desktop
+davidanson.vscode-markdownlint
+flyfly6.terminal-in-status-bar
+google.geminicodeassist
+iuriibarlukov.cursor-column-highlight
+julianiaquinandi.nvim-ui-modifier
+lakshits11.best-themes-redefined
+ms-vscode.powershell
+tomoki1207.selectline-statusbar

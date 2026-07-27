@@ -12,6 +12,11 @@ dotfiles/
 │   ├── init.lua    # OS 共通設定 (IME 自動オフ)
 │   ├── setup.sh    # Mac 用: macism インストール + init.lua リンク
 │   └── setup.ps1   # Windows 用: zenhan 配置 + init.lua リンク
+├── vscode/         # VSCode モジュール
+│   ├── settings.json   # OS 共通のユーザー設定
+│   ├── extensions.txt  # 拡張機能 ID 一覧
+│   ├── setup.sh    # Mac 用: 設定リンク + 拡張機能 + フォント (brew cask)
+│   └── setup.ps1   # Windows 用: 設定リンク + 拡張機能 + フォント (zip 展開)
 └── autohotkey/     # AutoHotkey モジュール (Windows 専用)
     ├── alt-ime_and_leftshiftesc-tilda_ahk_v2.ahk  # Alt 空打ちで IME 切替 / LShift+Esc → ~
     ├── launch_leftshiftesc-tilda.bat              # .ahk 起動用ランチャ
@@ -70,6 +75,39 @@ vscode-neovim (VSCode / Cursor) やターミナル Neovim で、インサート�
   (現在の入力ソース ID は IME オン状態で `macism` を引数なし実行すると確認できる)
 - Mac の初回切り替え時にアクセシビリティ権限を求められた場合は、
   VSCode (または使用中のターミナル) に権限を付与する
+
+## vscode モジュール: 設定 / 拡張機能 / フォントの同期
+
+VSCode のユーザー設定・拡張機能・エディタフォントを Mac / Windows 間で揃える。
+
+`setup.sh` / `setup.ps1` の動作:
+
+1. **`settings.json` をシンボリックリンク**する (既存の実ファイルは `.bak` に退避)
+   - Mac: `~/Library/Application Support/Code/User/settings.json`
+   - Windows: `%APPDATA%\Code\User\settings.json`
+   - リンクなので、VSCode の GUI で設定を変えるとリポジトリ側のファイルが直接書き換わる。
+     差分が出たらそのままコミットすればよい
+2. **`extensions.txt` の拡張機能を導入**する
+   (`code --list-extensions` と比較して未インストールのものだけを入れる)
+3. **`editor.fontFamily` のフォント (Moralerspace Neon HW) を導入**する
+   - Mac: `brew install --cask font-moralerspace-hw`
+   - Windows: [yuru7/moralerspace](https://github.com/yuru7/moralerspace) のリリース zip を
+     ダウンロードし、`%LOCALAPPDATA%\Microsoft\Windows\Fonts` へ配置 + HKCU へ登録
+     (**管理者権限不要**。約 100MB のダウンロードが発生する。導入済みならスキップ)
+
+拡張機能リストを最新化するとき:
+
+```sh
+code --list-extensions > vscode/extensions.txt
+```
+
+注意点:
+
+- `code` コマンドが PATH に無い場合、拡張機能の導入はスキップされる
+  (VSCode のコマンドパレットから `Shell Command: Install 'code' command in PATH` を実行する)
+- Windows で開発者モードも管理者権限も無い場合はリンクではなく**コピー**になる。
+  この場合は双方向の自動同期が効かないため、設定を変えたらリポジトリ側へ手動で反映すること
+- Cursor (`%APPDATA%\Cursor\User`) は対象外。共有したくなったら同じ要領でパスを追加する
 
 ## autohotkey モジュール (Windows 専用)
 
