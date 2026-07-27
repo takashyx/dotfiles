@@ -77,3 +77,34 @@ if ime_off_cmd then
     }
   )
 end
+
+if vim.g.vscode then
+    vim.cmd([[
+        " Insertモード用の判定
+        function! SetCursorLineNrColorInsert(mode)
+            if a:mode == "i"
+                call VSCodeNotify('nvim-theme.insert')
+            elseif a:mode == "r"
+                call VSCodeNotify('nvim-theme.replace')
+            endif
+        endfunction
+
+        augroup CursorLineNrColorSwap
+            autocmd!
+            " Visualモード
+            autocmd ModeChanged *:[vV\x16]* call VSCodeNotify('nvim-theme.visual')
+            " VisualモードからNormalモードに戻る時
+            autocmd ModeChanged [vV\x16]*:n call VSCodeNotify('nvim-theme.normal')
+            " Replaceモード
+            autocmd ModeChanged *:[R]* call VSCodeNotify('nvim-theme.replace')
+            " ReplaceモードからNormalモードに戻る時
+            autocmd ModeChanged [R]*:n call VSCodeNotify('nvim-theme.normal')
+            " Insertモードに入る時
+            autocmd InsertEnter * call SetCursorLineNrColorInsert(v:insertmode)
+            " InsertモードからNormalモードに戻る時
+            autocmd InsertLeave * call VSCodeNotify('nvim-theme.normal')
+            " カーソルホールド時にも念のためNormalに戻す
+            autocmd CursorHold * call VSCodeNotify('nvim-theme.normal')
+        augroup END
+    ]])
+end
