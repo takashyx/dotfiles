@@ -35,7 +35,7 @@ if ($null -eq $codeCmd) {
         if ($line.TrimStart().StartsWith('#')) { $header += $line } else { break }
     }
 
-    # LF / BOM なし UTF-8 で書き出す (Mac 側の update.sh と差分が出ないようにする)
+    # LF / BOM なし UTF-8 で書き出す (Mac 側の capture.sh と差分が出ないようにする)
     $new = (($header + $list) -join "`n") + "`n"
     if ($new -eq ($old -replace "`r`n", "`n")) {
         Write-Host "==> extensions.txt: 変更なし ($($list.Count) 件)"

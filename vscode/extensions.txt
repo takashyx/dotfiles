@@ -1,6 +1,6 @@
 # VSCode 拡張機能リスト (1 行 1 ID / # 始まりはコメント)
-#   このヘッダは update.sh / update.ps1 の実行後も維持される
-#   更新方法: bash update.sh (Mac) / .\update.ps1 (Windows)
+#   このヘッダは capture.sh / capture.ps1 の実行後も維持される
+#   更新方法: bash capture.sh (Mac) / .\capture.ps1 (Windows)
 anthropic.claude-code
 asvetliakov.vscode-neovim
 betaversion.vscode-github-desktop

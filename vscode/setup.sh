@@ -22,7 +22,7 @@ if [ -e "$USER_DIR/settings.json" ] && [ ! -L "$USER_DIR/settings.json" ]; then
   elif [ -e "$USER_DIR/settings.json.bak" ]; then
     # dotfiles 導入前の設定を保持したいので、既存の .bak は上書きしない
     echo "==> settings.json.bak は既にあるため退避をスキップします"
-    echo "    (未取り込みの変更があるなら update.sh を先に実行してください)"
+    echo "    (未取り込みの変更があるなら capture.sh を先に実行してください)"
   else
     mv "$USER_DIR/settings.json" "$USER_DIR/settings.json.bak"
     echo "==> 既存の settings.json を settings.json.bak に退避しました"

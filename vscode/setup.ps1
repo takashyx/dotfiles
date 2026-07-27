@@ -19,7 +19,7 @@ if ((Test-Path $target) -and -not (Get-Item $target).LinkType) {
     } elseif (Test-Path "$target.bak") {
         # dotfiles 導入前の設定を保持したいので、既存の .bak は上書きしない
         Write-Host '==> settings.json.bak は既にあるため退避をスキップします'
-        Write-Host '    (未取り込みの変更があるなら update.ps1 を先に実行してください)'
+        Write-Host '    (未取り込みの変更があるなら capture.ps1 を先に実行してください)'
     } else {
         Move-Item $target "$target.bak"
         Write-Host '==> 既存の settings.json を settings.json.bak に退避しました'

@@ -8,8 +8,8 @@ Mac / Windows 共通の設定ファイルをモジュール単位(フォルダ�
 dotfiles/
 ├── setup.sh        # 配置エントリポイント (Mac): 各フォルダの setup.sh を順に実行
 ├── setup.ps1       # 配置エントリポイント (Windows): 各フォルダの setup.ps1 を順に実行
-├── update.sh       # 取り込みエントリポイント (Mac): 各フォルダの update.sh を順に実行
-├── update.ps1      # 取り込みエントリポイント (Windows): 各フォルダの update.ps1 を順に実行
+├── capture.sh      # 取り込みエントリポイント (Mac): 各フォルダの capture.sh を順に実行
+├── capture.ps1     # 取り込みエントリポイント (Windows): 各フォルダの capture.ps1 を順に実行
 ├── nvim/           # Neovim (vscode-neovim) モジュール
 │   ├── init.lua    # OS 共通設定 (IME 自動オフ)
 │   ├── setup.sh    # Mac 用: macism インストール + init.lua リンク
@@ -19,8 +19,8 @@ dotfiles/
 │   ├── extensions.txt  # 拡張機能 ID 一覧
 │   ├── setup.sh    # Mac 用: 設定リンク + 拡張機能 + フォント (brew cask)
 │   ├── setup.ps1   # Windows 用: 設定リンク + 拡張機能 + フォント (zip 展開)
-│   ├── update.sh   # Mac 用: 現在の設定 / 拡張機能をリポジトリへ取り込む
-│   └── update.ps1  # Windows 用: 同上
+│   ├── capture.sh  # Mac 用: 現在の設定 / 拡張機能をリポジトリへ取り込む
+│   └── capture.ps1 # Windows 用: 同上
 └── autohotkey/     # AutoHotkey モジュール (Windows 専用)
     ├── alt-ime_and_leftshiftesc-tilda_ahk_v2.ahk  # Alt 空打ちで IME 切替 / LShift+Esc → ~
     ├── launch_leftshiftesc-tilda.bat              # .ahk 起動用ランチャ
@@ -32,10 +32,14 @@ dotfiles/
 | コマンド | 方向 | 用途 |
 | --- | --- | --- |
 | `setup.sh` / `setup.ps1` | リポジトリ → マシン | 新しいマシンに設定を展開する |
-| `update.sh` / `update.ps1` | マシン → リポジトリ | 手元で変えた設定をリポジトリに取り込む |
+| `capture.sh` / `capture.ps1` | マシン → リポジトリ | 手元で変えた設定をリポジトリに取り込む |
+
+> [!IMPORTANT]
+> `capture` は**リポジトリ側のファイルを現在のマシンの状態で上書きする**コマンドで、
+> 「リポジトリの最新をマシンに反映する」ものではない (それは `setup` の役割)。
 
 新しい設定を追加するときは、フォルダを作って `setup.sh` / `setup.ps1` を置くだけでよい。
-取り込みも自動化したければ、あわせて `update.sh` / `update.ps1` を置く
+取り込みも自動化したければ、あわせて `capture.sh` / `capture.ps1` を置く
 (置かないモジュールは単にスキップされる)。
 
 ## セットアップ
@@ -71,13 +75,13 @@ powershell -ExecutionPolicy Bypass -File .\setup.ps1
 Mac:
 
 ```sh
-bash update.sh
+bash capture.sh
 ```
 
 Windows (PowerShell):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\update.ps1
+powershell -ExecutionPolicy Bypass -File .\capture.ps1
 ```
 
 書き戻すだけでコミットはしないので、`git diff` で差分を確認してからコミットする。
@@ -126,7 +130,7 @@ VSCode のユーザー設定・拡張機能・エディタフォントを Mac / 
      ダウンロードし、`%LOCALAPPDATA%\Microsoft\Windows\Fonts` へ配置 + HKCU へ登録
      (**管理者権限不要**。約 100MB のダウンロードが発生する。導入済みならスキップ)
 
-`update.sh` / `update.ps1` の動作 (逆方向の取り込み):
+`capture.sh` / `capture.ps1` の動作 (逆方向の取り込み):
 
 1. **`settings.json` を書き戻す**
    - リンク運用ならリポジトリのファイル自体が既に書き換わっているので「取り込み不要」でスキップ
@@ -139,10 +143,10 @@ VSCode のユーザー設定・拡張機能・エディタフォントを Mac / 
 - `code` コマンドが PATH に無い場合、拡張機能の導入/取り込みはスキップされる
   (VSCode のコマンドパレットから `Shell Command: Install 'code' command in PATH` を実行する)
 - Windows で開発者モードも管理者権限も無い場合はリンクではなく**コピー**になる。
-  この場合は自動で双方向同期されないので、設定を変えたら `update.ps1` を実行してから
+  この場合は自動で双方向同期されないので、設定を変えたら `capture.ps1` を実行してから
   コミットすること
 - `.bak` は dotfiles 導入前の設定を残すためのものなので、既にある場合は上書きされない
-  (未取り込みの変更を消したくない場合は `update` を先に実行する)
+  (未取り込みの変更を消したくない場合は `capture` を先に実行する)
 - Cursor (`%APPDATA%\Cursor\User`) は対象外。共有したくなったら同じ要領でパスを追加する
 
 ## autohotkey モジュール (Windows 専用)

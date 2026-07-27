@@ -1,17 +1,17 @@
 ﻿# =====================================================================
 # dotfiles 取り込みエントリポイント (Windows)
-#   各モジュールフォルダ直下の update.ps1 を順に実行する。
+#   各モジュールフォルダ直下の capture.ps1 を順に実行する。
 #   現在のマシンの設定をリポジトリ側へ書き戻す (setup.ps1 とは逆方向)。
-#   取り込み対象を追加するときは、フォルダに update.ps1 を置くだけでよい。
+#   取り込み対象を追加するときは、フォルダに capture.ps1 を置くだけでよい。
 #   モジュールが失敗しても残りは続行し、最後に結果をサマリー表示する。
-# 実行例: powershell -ExecutionPolicy Bypass -File .\update.ps1
+# 実行例: powershell -ExecutionPolicy Bypass -File .\capture.ps1
 # =====================================================================
 $ErrorActionPreference = 'Stop'
 
 $results = @()
 
 foreach ($dir in (Get-ChildItem -Path $PSScriptRoot -Directory | Sort-Object Name)) {
-    $script = Join-Path $dir.FullName 'update.ps1'
+    $script = Join-Path $dir.FullName 'capture.ps1'
     if (-not (Test-Path $script)) { continue }
 
     Write-Host ''
