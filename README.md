@@ -14,13 +14,12 @@ dotfiles/
 │   ├── init.lua    # OS 共通設定 (IME 自動オフ)
 │   ├── setup.sh    # Mac 用: macism インストール + init.lua リンク
 │   └── setup.ps1   # Windows 用: zenhan 配置 + init.lua リンク
-├── vscode/         # VSCode モジュール
-│   ├── settings.json   # OS 共通のユーザー設定
-│   ├── extensions.txt  # 拡張機能 ID 一覧
-│   ├── setup.sh    # Mac 用: 設定リンク + 拡張機能 + フォント (brew cask)
-│   ├── setup.ps1   # Windows 用: 設定リンク + 拡張機能 + フォント (zip 展開)
-│   ├── capture.sh  # Mac 用: 現在の設定 / 拡張機能をリポジトリへ取り込む
-│   └── capture.ps1 # Windows 用: 同上
+├── font/           # フォントモジュール (Moralerspace Neon / Neon HW の両方)
+│   ├── setup.sh    # Mac 用: brew cask で導入
+│   └── setup.ps1   # Windows 用: リリース zip をユーザー領域へ展開 + HKCU 登録
+├── vscode/         # VSCode モジュール (何も配置しない。移行済みの案内のみ)
+│   ├── setup.sh    # Mac 用: Settings Sync へ移行済みの NOTE を出力するだけ
+│   └── setup.ps1   # Windows 用: 同上
 └── autohotkey/     # AutoHotkey モジュール (Windows 専用)
     ├── alt-ime_and_leftshiftesc-tilda_ahk_v2.ahk  # Alt 空打ちで IME 切替 / LShift+Esc → ~
     ├── launch_leftshiftesc-tilda.bat              # .ahk 起動用ランチャ
@@ -41,6 +40,18 @@ dotfiles/
 新しい設定を追加するときは、フォルダを作って `setup.sh` / `setup.ps1` を置くだけでよい。
 取り込みも自動化したければ、あわせて `capture.sh` / `capture.ps1` を置く
 (置かないモジュールは単にスキップされる)。
+
+### NOTE 行 (サマリへの伝達)
+
+モジュールが `NOTE: ...` という行を標準出力へ書くと、その行はモジュールの実行ログには
+表示されず、最後のサマリに `- ...` として黄色で表示される。
+毎回の実行で必ず目に入れたい注意書き (移行済みの案内など) に使う。
+
+```text
+========== セットアップ結果 ==========
+  [OK] vscode: 成功
+       - VSCode の設定は VSCode 内蔵の Settings Sync に移行しました
+```
 
 ## セットアップ
 
@@ -87,6 +98,11 @@ powershell -ExecutionPolicy Bypass -File .\capture.ps1
 書き戻すだけでコミットはしないので、`git diff` で差分を確認してからコミットする。
 変更が無いモジュールは「変更なし」と表示してファイルに触らないため、無駄な差分は出ない。
 
+> [!NOTE]
+> 現在 `capture.sh` / `capture.ps1` を持つモジュールは無いため、実行しても
+> 「実行されたモジュールはありません」と表示されるだけ。取り込みが必要なモジュールを
+> 追加したときのための仕組みとして残している。
+
 ## nvim モジュール: IME 自動オフ
 
 vscode-neovim (VSCode / Cursor) やターミナル Neovim で、インサートモードを抜けて
@@ -111,43 +127,44 @@ vscode-neovim (VSCode / Cursor) やターミナル Neovim で、インサート�
 - Mac の初回切り替え時にアクセシビリティ権限を求められた場合は、
   VSCode (または使用中のターミナル) に権限を付与する
 
-## vscode モジュール: 設定 / 拡張機能 / フォントの同期
+## vscode モジュール: 案内のみ
 
-VSCode のユーザー設定・拡張機能・エディタフォントを Mac / Windows 間で揃える。
+VSCode 本体の設定 (`settings.json`) と拡張機能は**このリポジトリでは同期しない**。
+VSCode 内蔵の Settings Sync に移行済み。
 
-`setup.sh` / `setup.ps1` の動作:
+このモジュールは何も配置せず、`setup` のサマリに次の NOTE を出すだけ。
 
-1. **`settings.json` をシンボリックリンク**する (既存の実ファイルは `.bak` に退避)
-   - Mac: `~/Library/Application Support/Code/User/settings.json`
-   - Windows: `%APPDATA%\Code\User\settings.json`
-   - リンクなので、VSCode の GUI で設定を変えるとリポジトリ側のファイルが直接書き換わる。
-     差分が出たらそのままコミットすればよい
-2. **`extensions.txt` の拡張機能を導入**する
-   (`code --list-extensions` と比較して未インストールのものだけを入れる)
-3. **`editor.fontFamily` のフォント (Moralerspace Neon HW) を導入**する
-   - Mac: `brew install --cask font-moralerspace-hw`
-   - Windows: [yuru7/moralerspace](https://github.com/yuru7/moralerspace) のリリース zip を
-     ダウンロードし、`%LOCALAPPDATA%\Microsoft\Windows\Fonts` へ配置 + HKCU へ登録
-     (**管理者権限不要**。約 100MB のダウンロードが発生する。導入済みならスキップ)
+```text
+  [OK] vscode: 成功
+       - VSCode の設定は VSCode 内蔵の Settings Sync に移行しました
+```
 
-`capture.sh` / `capture.ps1` の動作 (逆方向の取り込み):
+エディタフォントだけは Settings Sync では配布されないため、`font/` モジュールが担当する。
 
-1. **`settings.json` を書き戻す**
-   - リンク運用ならリポジトリのファイル自体が既に書き換わっているので「取り込み不要」でスキップ
-   - コピー運用 (Windows でリンクを作れなかった場合) なら実ファイルをリポジトリへコピーする
-2. **`extensions.txt` を再生成**する
-   (`code --list-extensions` をソートして書き出し。先頭のコメント行は維持される)
+## font モジュール: エディタフォントの導入
 
-注意点:
+`editor.fontFamily` で使う Moralerspace Neon を**通常版と HW 版の両方**導入する
+(HW 版は半角幅が異なるので、用途に応じて `settings.json` 側で使い分ける)。
+設定ファイルの同期とは独立したモジュールなので、フォント名を指定するのは各マシンの責任。
 
-- `code` コマンドが PATH に無い場合、拡張機能の導入/取り込みはスキップされる
-  (VSCode のコマンドパレットから `Shell Command: Install 'code' command in PATH` を実行する)
-- Windows で開発者モードも管理者権限も無い場合はリンクではなく**コピー**になる。
-  この場合は自動で双方向同期されないので、設定を変えたら `capture.ps1` を実行してから
-  コミットすること
-- `.bak` は dotfiles 導入前の設定を残すためのものなので、既にある場合は上書きされない
-  (未取り込みの変更を消したくない場合は `capture` を先に実行する)
-- Cursor (`%APPDATA%\Cursor\User`) は対象外。共有したくなったら同じ要領でパスを追加する
+| 版 | Mac (cask) | Windows (リリース zip) | フォント名 |
+| --- | --- | --- | --- |
+| 通常 | `font-moralerspace` | `Moralerspace_v2.0.0.zip` | `Moralerspace Neon` |
+| HW | `font-moralerspace-hw` | `MoralerspaceHW_v2.0.0.zip` | `Moralerspace Neon HW` |
+
+- Mac: `brew install --cask` で両方を導入する
+- Windows: [yuru7/moralerspace](https://github.com/yuru7/moralerspace) のリリース zip を
+  ダウンロードし、`%LOCALAPPDATA%\Microsoft\Windows\Fonts` へ配置 + HKCU へ登録
+  (**管理者権限不要**。1 版あたり約 100MB のダウンロードが発生する。導入済みならスキップ)
+- 判定は版ごとに独立しているので、片方だけ未導入ならその版だけダウンロードする
+
+取り込み (`capture`) は無いため、フォントは常に「リポジトリ → マシン」の一方向のみ。
+
+```jsonc
+// settings.json 側で指定する内容 (参考)
+"editor.fontFamily": "'Moralerspace Neon', monospace",
+"editor.fontLigatures": "true",
+```
 
 ## autohotkey モジュール (Windows 専用)
 

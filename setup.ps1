@@ -8,6 +8,7 @@
 $ErrorActionPreference = 'Stop'
 
 $results = @()
+$notes   = @()
 
 foreach ($dir in (Get-ChildItem -Path $PSScriptRoot -Directory | Sort-Object Name)) {
     $script = Join-Path $dir.FullName 'setup.ps1'
@@ -16,7 +17,14 @@ foreach ($dir in (Get-ChildItem -Path $PSScriptRoot -Directory | Sort-Object Nam
     Write-Host ''
     Write-Host "========== モジュール: $($dir.Name) =========="
     try {
-        & $script
+        # モジュールが 'NOTE: ...' を出力した場合はサマリ側に回す (ここでは表示しない)
+        & $script | ForEach-Object {
+            if ("$_" -match '^\s*NOTE:\s*(.+)$') {
+                $notes += [pscustomobject]@{ Module = $dir.Name; Text = $Matches[1] }
+            } else {
+                Write-Host $_
+            }
+        }
         $results += [pscustomobject]@{ Module = $dir.Name; Success = $true; Detail = '' }
     } catch {
         Write-Host "==> エラー: $($_.Exception.Message)"
@@ -35,6 +43,9 @@ if ($results.Count -eq 0) {
             Write-Host "  [OK] $($r.Module): 成功" -ForegroundColor Green
         } else {
             Write-Host "  [NG] $($r.Module): 失敗 - $($r.Detail)" -ForegroundColor Red
+        }
+        foreach ($n in @($notes | Where-Object { $_.Module -eq $r.Module })) {
+            Write-Host "       - $($n.Text)" -ForegroundColor Yellow
         }
     }
 }

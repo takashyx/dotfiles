@@ -12,6 +12,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 MODULES=()
 RESULTS=()
+NOTES=()
 FAILED=0
 
 for script in "$REPO_ROOT"/*/setup.sh; do
@@ -19,24 +20,28 @@ for script in "$REPO_ROOT"/*/setup.sh; do
   module="$(basename "$(dirname "$script")")"
   echo ""
   echo "========== モジュール: $module =========="
-  if bash "$script"; then
-    MODULES+=("$module")
+  out="$(mktemp "${TMPDIR:-/tmp}/dotfiles-setup.XXXXXX")"
+  # モジュールが 'NOTE: ...' を出力した場合はサマリ側に回す (ここでは表示しない)
+  if bash "$script" | tee "$out" | sed '/^[[:space:]]*NOTE:/d'; then
     RESULTS+=("成功")
   else
-    MODULES+=("$module")
     RESULTS+=("失敗")
     FAILED=1
   fi
+  MODULES+=("$module")
+  NOTES+=("$(sed -n 's/^[[:space:]]*NOTE:[[:space:]]*//p' "$out" | head -1)")
+  rm -f "$out"
 done
 
 # 色付き出力 (端末出力時のみ有効化。パイプ/リダイレクト時は無色)
 if [ -t 1 ]; then
   C_GREEN=$'\033[32m'
   C_RED=$'\033[31m'
+  C_YELLOW=$'\033[33m'
   C_CYAN=$'\033[36m'
   C_RESET=$'\033[0m'
 else
-  C_GREEN='' C_RED='' C_CYAN='' C_RESET=''
+  C_GREEN='' C_RED='' C_YELLOW='' C_CYAN='' C_RESET=''
 fi
 
 echo ""
@@ -49,6 +54,9 @@ else
       echo "  ${C_GREEN}[OK] ${MODULES[$i]}: 成功${C_RESET}"
     else
       echo "  ${C_RED}[NG] ${MODULES[$i]}: 失敗${C_RESET}"
+    fi
+    if [ -n "${NOTES[$i]}" ]; then
+      echo "       ${C_YELLOW}- ${NOTES[$i]}${C_RESET}"
     fi
   done
 fi
