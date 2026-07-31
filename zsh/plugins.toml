@@ -1,0 +1,58 @@
+# `sheldon` configuration file
+# ----------------------------
+#
+# You can modify this file directly or you can use one of the following
+# `sheldon` commands which are provided to assist in editing the config file:
+#
+# - `sheldon add` to add a new plugin to the config file
+# - `sheldon edit` to open up the config file in the default editor
+# - `sheldon remove` to remove a plugin from the config file
+#
+# See the documentation for more https://github.com/rossmacarthur/sheldon#readme
+
+shell = "zsh"
+
+[templates]
+# apply = ['defer'] を指定したプラグインの各ファイルを zsh-defer 経由で読み込む
+defer = """
+{% for file in files %}zsh-defer source "{{ file }}"
+{% endfor %}"""
+
+# 他プラグインが zsh-defer 関数に依存するため最初に読み込む
+[plugins.zsh-defer]
+github = 'romkatv/zsh-defer'
+
+# プロンプトテーマ。Homebrew でインストールしたものを source する (setup.sh で `brew install powerlevel10k`)
+# 即時 source (prompt はできるだけ早く確定させたいため defer しない)
+[plugins.powerlevel10k]
+inline = 'source "$(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme"'
+
+# `p10k configure` で生成される設定ファイル (zsh/p10k.zsh にリンクされたもの) があれば読み込む
+[plugins.powerlevel10k-config]
+inline = '[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh'
+
+[plugins.compinit]
+# -u: insecure directories の警告を抑制 (非同期実行中にプロンプトが出るのを防ぐ)
+inline = 'autoload -Uz compinit && zsh-defer compinit -u'
+
+[plugins.colors]
+inline = 'autoload -Uz colors && zsh-defer colors'
+
+[plugins.zsh-autosuggestions]
+github = 'zsh-users/zsh-autosuggestions'
+apply = ['defer']
+
+[plugins.zsh-syntax-highlighting]
+github = 'zsh-users/zsh-syntax-highlighting'
+apply = ['defer']
+
+# dotfiles 側の zsh/sync/*.zsh をまとめて source する (~/dotfiles は setup.sh が作るリンク)
+[plugins.dotfiles-sync]
+local = '~/dotfiles/zsh/sync'
+use = ['*.zsh']
+apply = ['source']
+
+# For example:
+#
+# [plugins.base16]
+# github = "chriskempson/base16-shell"

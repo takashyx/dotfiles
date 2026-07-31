@@ -1,100 +1,14 @@
-# macbook pro 16 2019
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
 
-# go
-export GOPATH=$HOME/.go
-export PATH=$PATH:$GOPATH/bin
+# プラグインマネージャ (sheldon)。設定は ~/.config/sheldon/plugins.toml (zsh/plugins.toml)
+# dotfiles-sync プラグインが zsh/sync/*.zsh をまとめて source する
+# (~/.p10k.zsh の source は plugins.toml の powerlevel10k-config プラグインが行う)
+command -v sheldon >/dev/null 2>&1 && eval "$(sheldon source)"
 
-
-# load zsh-notify(customed)
-# export SYS_NOTIFIER="/usr/local/bin/terminal-notifier"
-# export NOTIFY_COMMAND_COMPLETE_TIMEOUT=1
-# source ~/zsh-notify/notify.plugin.zsh
-
-
-# show gif
-# function command_not_found_handler() {
-#   echo "$@ : command not found..." 1>&2
-#   if [ -e /Users/takashyx/.iterm2/imgcat ];then
-#     if [ -e /Users/takashyx/fail.gif ];then
-#       /Users/takashyx/.iterm2/imgcat /Users/takashyx/fail.gif
-#     fi
-#   fi
-#   return 127
-# }
-
-# custom grep (ignore case)
-function gri { grep -rnIi "$1" . --color=always ; }
-
-# custom find (ignore case)
-function fii { find . | grep -i "$1" --color=always ; }
-
-function findlnfrom {
-  find / -type l | while read LINK; do
-  readlink "$LINK" | grep -Fx $1 >/dev/null && echo "$LINK"
-  done
-}
-
-# escape sequence to tell pwd so that OSX terminal can restore it
-#
-chpwd () {print -Pn "\e]2; %~/ \a"}
-
-# fzf
-export FZF_DEFAULT_OPTS="--preview 'bat --color=always --style=header,grid --line-range :100 {}' --height 80% --reverse --border"
-export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'" # show directory tree
-
-
-# fbr - checkout git branch
-function fzf-checkout-branch() {
-  local branches branch
-  branches=$(git branch -r | sed -e 's/\(^\* \|^  \)//g' | cut -d " " -f 1) &&
-  branch=$(echo "$branches" | fzf --preview "git show --color=always {}") &&
-  git checkout $(echo "$branch")
-}
-zle     -N   fzf-checkout-branch
-bindkey "^b" fzf-checkout-branch
-
-# alias
-
-alias ls='ls -alFG'
-alias cp='cp -i' # safety
-alias mv='mv -i' # safety
-alias rm='rm -i' # safety
-
-alias gcd='ghq look `ghq list |fzf --preview "bat --color=always --style=header,grid --line-range :80 $(ghq root)/{}/README.*"`' # ghq look with readme preview
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-
-### Added by Zplugin's installer
-source "$HOME/.zplugin/bin/zplugin.zsh"
-autoload -Uz _zplugin
-(( ${+_comps} )) && _comps[zplugin]=_zplugin
-### End of Zplugin installer's chunk
-
-zplugin light zsh-users/zsh-completions
-
-zplugin ice wait "!0" atload "_zsh_autosuggest_start"
-zplugin light zsh-users/zsh-autosuggestions
-zplugin light marzocchi/zsh-notify
-zplugin light zdharma/fast-syntax-highlighting
-zplugin light bhilburn/powerlevel9k
-
-# zsh-notify settings
-zstyle ':notify:*' command-complete-timeout 0
-zstyle ':notify:*' error-title "Command failed (in #{time_elapsed} seconds)"
-zstyle ':notify:*' success-title "Command finished (in #{time_elapsed} seconds)"
-zstyle ':notify:*' error-icon "/Users/takashyx/.img/ng.png"
-zstyle ':notify:*' success-icon "/Users/takashyx/.img/ok.png"
-zstyle ':notify:*' enable-on-ssh yes
-zstyle ':notify:*' error-sound "Glass"
-zstyle ':notify:*' success-sound "default"
-
-# thefuck
-eval $(thefuck --alias)
-fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
-
-autoload -U compinit
-compinit -u
-
-# rbenv
-eval "$(rbenv init -)"
-
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

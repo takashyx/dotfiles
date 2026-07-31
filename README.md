@@ -14,6 +14,12 @@ dotfiles/
 │   ├── init.lua    # OS 共通設定 (IME 自動オフ)
 │   ├── setup.sh    # Mac 用: macism インストール + init.lua リンク
 │   └── setup.ps1   # Windows 用: zenhan 配置 + init.lua リンク
+├── zsh/            # zsh モジュール (Mac 専用)
+│   ├── .zshrc         # ~/.zshrc にリンク (sheldon の起動のみ)
+│   ├── plugins.toml   # ~/.config/sheldon/plugins.toml にリンク (sheldon の設定。powerlevel10k 等)
+│   ├── p10k.zsh       # ~/.p10k.zsh にリンク (`p10k configure` の生成物)
+│   ├── sync/          # sheldon が即時 source する実体設定 (*.zsh)
+│   └── setup.sh       # Mac 用: 上記のリンク + brew install powerlevel10k + フォント + ~/dotfiles リンクを作成
 ├── font/           # フォントモジュール (Moralerspace Neon / Neon HW の両方)
 │   ├── setup.sh    # Mac 用: brew cask で導入
 │   └── setup.ps1   # Windows 用: リリース zip をユーザー領域へ展開 + HKCU 登録
@@ -126,6 +132,27 @@ vscode-neovim (VSCode / Cursor) やターミナル Neovim で、インサート�
   (現在の入力ソース ID は IME オン状態で `macism` を引数なし実行すると確認できる)
 - Mac の初回切り替え時にアクセシビリティ権限を求められた場合は、
   VSCode (または使用中のターミナル) に権限を付与する
+
+## zsh モジュール: .zshrc の同期 (Mac 専用)
+
+`zsh/.zshrc` を `~/.zshrc` に、`zsh/plugins.toml` ([sheldon](https://github.com/rossmacarthur/sheldon)
+の設定) を `~/.config/sheldon/plugins.toml` にそれぞれシンボリックリンクする。
+既存の実ファイルがあれば `.bak` に退避してからリンクを張る。
+
+さらに `~/dotfiles` をリポジトリ本体へのシンボリックリンクとして作成する。
+`plugins.toml` の `dotfiles-sync` プラグイン (`local = '~/dotfiles/zsh/sync'`)
+が固定パスを参照するため。既に `~/dotfiles` が別の実ディレクトリとして存在する
+場合は上書きせず警告を出すだけなので、その場合は手動で確認する。
+
+リンク運用のため、リンク先を直接編集すればそのままリポジトリ側にも反映される
+(nvim モジュールと同じ考え方)。そのため取り込み用の `capture.sh` は無い。
+
+`.zshrc` 自体は sheldon を起動するだけで、実際の関数・alias・補完・プロンプト
+などの設定は `zsh/sync/*.zsh` に分割して置いてあり、sheldon が
+`local` プラグインとしてまとめて読み込む。各ファイルの詳細は
+[zsh/README.md](zsh/README.md) を参照。
+
+Windows 版は無いため、Windows のエントリポイントからは呼ばれない。
 
 ## vscode モジュール: 案内のみ
 
