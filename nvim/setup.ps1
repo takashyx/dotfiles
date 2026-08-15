@@ -1,6 +1,32 @@
 ﻿# nvim モジュール (Windows): zenhan の配置と init.lua のリンク
 $ErrorActionPreference = 'Stop'
 
+function Invoke-DownloadWithMbProgress {
+    param(
+        [Parameter(Mandatory = $true)] [string] $Uri,
+        [Parameter(Mandatory = $true)] [string] $OutFile
+    )
+
+    $webClient = [System.Net.WebClient]::new()
+    $progressId = 1
+    $subscription = Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -Action {
+        $args = $Event.SourceEventArgs
+        $received = [Math]::Round($args.BytesReceived / 1MB, 1)
+        $total = $args.TotalBytesToReceive
+        $totalMb = if ($total -gt 0) { [Math]::Round($total / 1MB, 1) } else { 'unknown' }
+        $percent = if ($total -gt 0) { [Math]::Round(($args.BytesReceived / $total) * 100, 1) } else { 0 }
+        Write-Progress -Id $progressId -Activity 'ダウンロード中' -Status "$received MB / $totalMb MB" -PercentComplete $percent
+    }
+
+    try {
+        $webClient.DownloadFile($Uri, $OutFile)
+    } finally {
+        Write-Progress -Id $progressId -Activity 'ダウンロード中' -Completed
+        Unregister-Event -SubscriptionId $subscription.Id
+        $webClient.Dispose()
+    }
+}
+
 $binDir    = Join-Path $env:USERPROFILE 'bin'
 $zenhanExe = Join-Path $binDir 'zenhan.exe'
 
@@ -12,7 +38,7 @@ if (Test-Path $zenhanExe) {
     New-Item -ItemType Directory -Force -Path $binDir | Out-Null
     $zip     = Join-Path $env:TEMP 'zenhan.zip'
     $extract = Join-Path $env:TEMP 'zenhan_extract'
-    Invoke-WebRequest -Uri 'https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip' -OutFile $zip
+    Invoke-DownloadWithMbProgress -Uri 'https://github.com/iuchim/zenhan/releases/download/v0.0.1/zenhan.zip' -OutFile $zip
     Expand-Archive -Path $zip -DestinationPath $extract -Force
     # zip 構造: zenhan/bin64/zenhan.exe (64bit) / zenhan/bin32/zenhan.exe (32bit)
     $exe = Get-ChildItem -Path $extract -Recurse -Filter 'zenhan.exe' |
