@@ -1,6 +1,32 @@
 ﻿# font モジュール (Windows): エディタ用フォントの導入
 $ErrorActionPreference = 'Stop'
 
+function Invoke-DownloadWithMbProgress {
+    param(
+        [Parameter(Mandatory = $true)] [string] $Uri,
+        [Parameter(Mandatory = $true)] [string] $OutFile
+    )
+
+    $webClient = [System.Net.WebClient]::new()
+    $progressId = 1
+    $subscription = Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -Action {
+        $args = $Event.SourceEventArgs
+        $received = [Math]::Round($args.BytesReceived / 1MB, 1)
+        $total = $args.TotalBytesToReceive
+        $totalMb = if ($total -gt 0) { [Math]::Round($total / 1MB, 1) } else { 'unknown' }
+        $percent = if ($total -gt 0) { [Math]::Round(($args.BytesReceived / $total) * 100, 1) } else { 0 }
+        Write-Progress -Id $progressId -Activity 'ダウンロード中' -Status "$received MB / $totalMb MB" -PercentComplete $percent
+    }
+
+    try {
+        $webClient.DownloadFile($Uri, $OutFile)
+    } finally {
+        Write-Progress -Id $progressId -Activity 'ダウンロード中' -Completed
+        Unregister-Event -SubscriptionId $subscription.Id
+        $webClient.Dispose()
+    }
+}
+
 $fontVersion = 'v2.0.0'
 
 # 通常版 (Moralerspace Neon) と HW 版 (Moralerspace Neon HW) の両方を導入する
@@ -29,7 +55,7 @@ foreach ($set in $fontSets) {
     $extract = Join-Path $env:TEMP "$($set.Archive)_extract"
     try {
         $url = "https://github.com/yuru7/moralerspace/releases/download/$fontVersion/$($set.Archive)_$fontVersion.zip"
-        Invoke-WebRequest -Uri $url -OutFile $zip
+        Invoke-DownloadWithMbProgress -Uri $url -OutFile $zip
         Expand-Archive -Path $zip -DestinationPath $extract -Force
         $ttfs = @(Get-ChildItem -Path $extract -Recurse -Filter "$($set.Prefix)-*.ttf")
         if ($ttfs.Count -eq 0) { throw "$($set.Prefix) の .ttf がアーカイブ内に見つかりませんでした" }
