@@ -1,6 +1,6 @@
 ﻿# autohotkey モジュール (Windows 専用)
 #   設定一式を ~/dotfiles/autohotkey に配置し、Windows 起動時に
-#   launch_leftshiftesc-tilda.bat を自動起動するショートカットをスタートアップに登録する。
+#   launch_alt-ime.bat を自動起動するショートカットをスタートアップに登録する。
 #   AutoHotkey v2 の有無を確認し、無ければ警告する (処理は継続)。
 #   ※ このモジュールには setup.sh を置かないため、Mac のエントリポイントからは呼ばれない。
 $ErrorActionPreference = 'Stop'
@@ -42,8 +42,17 @@ foreach ($f in Get-ChildItem -Path $srcDir -File |
     }
 }
 
+# リポジトリに無いファイルは配置先から削除 (ミラー同期。旧名の .ahk / .bat が残らないように)
+$srcNames = (Get-ChildItem -Path $srcDir -File |
+        Where-Object { $_.Name -notin @('setup.ps1', 'setup.sh') }).Name
+foreach ($f in Get-ChildItem -Path $destDir -File |
+        Where-Object { $_.Name -notin $srcNames }) {
+    Remove-Item $f.FullName -Force -Confirm:$false
+    Write-Host "==> $($f.Name): リポジトリに無いため配置先から削除しました"
+}
+
 # bat は %~dp0 で自身のフォルダへ cd するため、ショートカット経由でも .ahk を正しく解決できる。
-$batTarget = Join-Path $destDir 'launch_leftshiftesc-tilda.bat'
+$batTarget = Join-Path $destDir 'launch_alt-ime.bat'
 $shell     = New-Object -ComObject WScript.Shell
 
 # ショートカットを作成/修復するヘルパー (リンク先が一致すればスキップ、異なれば再作成)
@@ -59,16 +68,28 @@ function Set-Shortcut {
     $lnk.TargetPath       = $batTarget
     $lnk.WorkingDirectory = $destDir
     $lnk.WindowStyle      = $WindowStyle
-    $lnk.Description      = 'AutoHotkey: Alt-IME / LShift+Esc -> tilda'
+    $lnk.Description      = 'AutoHotkey: Alt-IME'
     $lnk.Save()
     Write-Host "==> ${Label}に登録しました: $LnkPath"
 }
 
-# 3. スタートアップに登録 (ログオン時に最小化で自動起動)
-$startupLnk = Join-Path ([Environment]::GetFolderPath('Startup')) 'ahk-leftshiftesc-tilda.lnk'
+# 3. 旧名のショートカットが残っていれば削除 (leftshiftesc-tilda 時代の名残)
+$oldLnks = @(
+    (Join-Path ([Environment]::GetFolderPath('Startup')) 'ahk-leftshiftesc-tilda.lnk'),
+    (Join-Path ([Environment]::GetFolderPath('Desktop')) 'AutoHotkey (IME + Shift+Esc).lnk')
+)
+foreach ($old in $oldLnks) {
+    if (Test-Path $old) {
+        Remove-Item $old -Force -Confirm:$false
+        Write-Host "==> 旧ショートカットを削除しました: $old"
+    }
+}
+
+# 4. スタートアップに登録 (ログオン時に最小化で自動起動)
+$startupLnk = Join-Path ([Environment]::GetFolderPath('Startup')) 'ahk-alt-ime.lnk'
 Set-Shortcut -LnkPath $startupLnk -WindowStyle 7 -Label 'スタートアップ'
 
-# 4. デスクトップにショートカットを生成 (タスクバーへのピン留めは Windows 10/11 で
+# 5. デスクトップにショートカットを生成 (タスクバーへのピン留めは Windows 10/11 で
 #    プログラムからは不可のため、手動起動用にデスクトップへ配置する)
-$desktopLnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'AutoHotkey (IME + Shift+Esc).lnk'
+$desktopLnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'AutoHotkey (Alt-IME).lnk'
 Set-Shortcut -LnkPath $desktopLnk -WindowStyle 7 -Label 'デスクトップ'

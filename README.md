@@ -29,8 +29,8 @@ dotfiles/
 │   ├── setup.sh    # Mac 用: Settings Sync へ移行済みの NOTE を出力するだけ
 │   └── setup.ps1   # Windows 用: 同上
 └── autohotkey/     # AutoHotkey モジュール (Windows 専用)
-    ├── alt-ime_and_leftshiftesc-tilda_ahk_v2.ahk  # Alt 空打ちで IME 切替 / LShift+Esc → ~
-    ├── launch_leftshiftesc-tilda.bat              # .ahk 起動用ランチャ
+    ├── alt-ime_ahk_v3.ahk   # Alt 空打ちで IME 切替 (左=英数 / 右=かな)
+    ├── launch_alt-ime.bat   # .ahk 起動用ランチャ
     └── setup.ps1   # Windows 用: ~/dotfiles へ配置 + スタートアップ登録 (setup.sh なし = Mac ではスキップ)
 ```
 
@@ -226,15 +226,15 @@ VSCode 内蔵の Settings Sync に移行済み。
 
 ## autohotkey モジュール (Windows 専用)
 
-左右 Alt キーの空打ちで IME を切り替え (左=英数 / 右=かな)、Shift+Esc を `~` に
-リマップする AutoHotkey v2 スクリプト。Mac 用の `setup.sh` を持たないため、
-Mac のエントリポイントからは呼ばれない。
+左右 Alt キーの空打ちで IME を切り替える (左=英数 / 右=かな) AutoHotkey v2
+スクリプト。Mac 用の `setup.sh` を持たないため、Mac のエントリポイントからは呼ばれない。
 
 `setup.ps1` の動作:
 
 - スクリプト一式 (`*.ahk` / `*.bat`) を `~/dotfiles/autohotkey` に配置
-  (内容が同一なら「配置済み (最新)」と表示してスキップ)
-- Windows のスタートアップに `launch_leftshiftesc-tilda.bat` のショートカットを登録し、
+  (内容が同一なら「配置済み (最新)」と表示してスキップ。
+  リポジトリに無いファイルは配置先から削除するミラー同期)
+- Windows のスタートアップに `launch_alt-ime.bat` のショートカットを登録し、
   ログオン時に自動起動する (リンク先が正しければ「登録済み」でスキップ、
   異なる場合は再作成する自己修復動作)
 - 手動起動用に**デスクトップにもショートカットを生成**する (同じく自己修復動作)
