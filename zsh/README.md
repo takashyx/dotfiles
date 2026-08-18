@@ -17,7 +17,7 @@ zsh/
 として `~/dotfiles/zsh/sync` 配下の `*.zsh` をまとめて読み込んでいる
 (`~/dotfiles` は `setup.sh` が作るリポジトリ本体へのシンボリックリンク。
 固定パスを使う sheldon の `local` 指定に合わせるため)。配置方法は
-[../README.md](../README.md#zsh-モジュール-zshrc-の同期-mac-専用) を参照。
+[../README.md](../README.md#zsh-モジュール-zshrc-の同期-mac--wsl) を参照。
 
 > [!NOTE]
 > sheldon は `local` プラグインの glob 結果もロックファイルにキャッシュする。
@@ -31,9 +31,9 @@ zsh/
 
 | ツール | 用途 | 未導入時の挙動 |
 | --- | --- | --- |
-| [sheldon](https://github.com/rossmacarthur/sheldon) | zsh プラグインマネージャ (`zsh/sync/` の読み込みも兼ねる) | `.zshrc` が何もしない |
-| [powerlevel10k](https://github.com/romkatv/powerlevel10k) | プロンプトテーマ。`setup.sh` が Homebrew で導入する | プロンプトテーマが読み込まれず、zsh 標準の素のプロンプトになる |
-| `MesloLGS NF` フォント (`font-meslo-for-powerlevel10k`) | powerlevel10k のアイコン表示。`setup.sh` が導入するが、ターミナルのフォント設定は手動変更が必要 | アイコンが文字化けして表示される |
+| [sheldon](https://github.com/rossmacarthur/sheldon) | zsh プラグインマネージャ (`zsh/sync/` の読み込みも兼ねる)。WSL は `setup.wsl.sh` が `~/.local/bin` へ導入する (Mac は `brew install sheldon` で手動導入) | `.zshrc` が何もしない |
+| [powerlevel10k](https://github.com/romkatv/powerlevel10k) | プロンプトテーマ。Mac は `setup.sh` が Homebrew で、WSL は `setup.wsl.sh` が git clone で導入する | プロンプトテーマが読み込まれず、zsh 標準の素のプロンプトになる |
+| `MesloLGS NF` フォント (`font-meslo-for-powerlevel10k`) | powerlevel10k のアイコン表示。Mac は `setup.sh` が導入 / WSL は Windows 側に手動導入。ターミナルのフォント設定は手動変更が必要 | アイコンが文字化けして表示される |
 | [eza](https://github.com/eza-community/eza) | `ls` の代替 (ツリー表示) | 通常の `ls` にフォールバック |
 | [bat](https://github.com/sharkdp/bat) | `cat` の代替 (シンタックスハイライト) | 通常の `cat` のまま |
 | `less` | `ls` の結果のページング | (macOS 標準搭載) |
@@ -58,7 +58,7 @@ command -v sheldon >/dev/null 2>&1 && eval "$(sheldon source)"
 | 順 | プラグイン | 内容 | 実行 |
 | --- | --- | --- | --- |
 | 1 | `zsh-defer` | [romkatv/zsh-defer](https://github.com/romkatv/zsh-defer) 本体 | 即時 (これ以降が `zsh-defer` を使うための前提) |
-| 2 | `powerlevel10k` | `$(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme` を source (Homebrew でインストール) | 即時 (プロンプトはすぐ確定させたいので defer しない) |
+| 2 | `powerlevel10k` | powerlevel10k 本体を OS 判定して source (Mac: `$(brew --prefix)/share/powerlevel10k/` / Linux: `~/.local/share/powerlevel10k/`) | 即時 (プロンプトはすぐ確定させたいので defer しない) |
 | 3 | `powerlevel10k-config` | `~/.p10k.zsh` があれば source (`zsh/p10k.zsh` をリンクしたもの) | 即時 |
 | 4 | `compinit` | `autoload -Uz compinit && zsh-defer compinit -u` | 呼び出しは即時、実体は遅延 |
 | 5 | `colors` | `autoload -Uz colors && zsh-defer colors` | 呼び出しは即時、実体は遅延 |
@@ -70,8 +70,9 @@ command -v sheldon >/dev/null 2>&1 && eval "$(sheldon source)"
 プロンプトは powerlevel10k が管理するため (旧 `check_git_status` を使った
 自作プロンプトは廃止)、`colors` などへの依存を気にする必要はない。
 
-powerlevel10k は `setup.sh` が `brew install powerlevel10k` でインストール
-する。設定ファイルは `p10k configure` で対話的に生成される
+powerlevel10k は Mac では `setup.sh` が `brew install powerlevel10k` で、
+WSL では `setup.wsl.sh` が `~/.local/share/powerlevel10k` への git clone で
+導入する。設定ファイルは `p10k configure` で対話的に生成される
 [`zsh/p10k.zsh`](p10k.zsh) で、`~/.zshrc` などと同じくリンク運用
 (`setup.sh` が `~/.p10k.zsh` にリンクする)。見た目を変えたい場合は
 `p10k configure` を再実行し、生成し直された `~/.p10k.zsh` を
@@ -184,14 +185,16 @@ setopt print_eight_bit       # 出力時8ビットを通す
 ## プロンプト (powerlevel10k)
 
 プロンプトは自作コードではなく [powerlevel10k](https://github.com/romkatv/powerlevel10k)
-に任せている。`setup.sh` が `brew install powerlevel10k` で導入し、
-`plugins.toml` が `$(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme`
-を source する。
+に任せている。Mac では `setup.sh` が `brew install powerlevel10k` で、
+WSL では `setup.wsl.sh` が `~/.local/share/powerlevel10k` への git clone で
+導入し、`plugins.toml` の inline プラグインが OS 判定してどちらかを source する。
 
 アイコン等のグリフ表示には powerlevel10k 推奨の `MesloLGS NF` フォント
-(4書体) が必要。`setup.sh` が `font-meslo-for-powerlevel10k` cask で導入
-するが、**ターミナル (iTerm2 など) 側のフォント設定を手動で `MesloLGS NF`
-に変更する必要がある** (自動化不可)。
+(4書体) が必要。Mac は `setup.sh` が `font-meslo-for-powerlevel10k` cask で
+導入する。WSL では描画を行う Windows 側に
+[手動で導入](https://github.com/romkatv/powerlevel10k#fonts)する。
+いずれも**ターミナル (iTerm2 / Windows Terminal など) 側のフォント設定を
+手動で `MesloLGS NF` に変更する必要がある** (自動化不可)。
 
 `zsh/p10k.zsh` (= `~/.p10k.zsh`) が無い状態でシェルを起動すると、対話式の
 `p10k configure` ウィザードが自動的に起動する (見た目・表示項目を選ぶだけの

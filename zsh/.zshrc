@@ -1,3 +1,6 @@
+# ユーザーローカルの bin (WSL では setup.wsl.sh が sheldon を ~/.local/bin に導入する)
+[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.

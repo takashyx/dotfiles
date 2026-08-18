@@ -39,7 +39,3 @@ IME_SET(SetSts, WinTitle := "A") {
 
 LAlt Up::IME_SET(0)   ; LAltでIMEオフ
 RAlt Up::IME_SET(1)   ; RAltでIMEオン
-
-
-;shift+ESC -> tilda
-<+ESC::Send '~'

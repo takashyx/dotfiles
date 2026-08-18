@@ -1,0 +1,9 @@
+# WSL / Mac のシェルが読むファイルは、Windows でチェックアウトしても LF のままにする
+# (CRLF だと WSL の bash / zsh がパースエラーになる)
+*.sh    text eol=lf
+*.zsh   text eol=lf
+.zshrc  text eol=lf
+*.toml  text eol=lf
+
+# PowerShell は CRLF
+*.ps1   text eol=crlf

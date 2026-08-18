@@ -22,10 +22,17 @@ defer = """
 [plugins.zsh-defer]
 github = 'romkatv/zsh-defer'
 
-# プロンプトテーマ。Homebrew でインストールしたものを source する (setup.sh で `brew install powerlevel10k`)
+# プロンプトテーマ。Mac は Homebrew 版 (setup.sh で `brew install powerlevel10k`)、
+# Linux(WSL) は setup.sh が ~/.local/share/powerlevel10k に clone したものを source する
 # 即時 source (prompt はできるだけ早く確定させたいため defer しない)
 [plugins.powerlevel10k]
-inline = 'source "$(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme"'
+inline = '''
+if [[ "$OSTYPE" == darwin* ]]; then
+  source "$(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme"
+elif [[ -r "${XDG_DATA_HOME:-$HOME/.local/share}/powerlevel10k/powerlevel10k.zsh-theme" ]]; then
+  source "${XDG_DATA_HOME:-$HOME/.local/share}/powerlevel10k/powerlevel10k.zsh-theme"
+fi
+'''
 
 # `p10k configure` で生成される設定ファイル (zsh/p10k.zsh にリンクされたもの) があれば読み込む
 [plugins.powerlevel10k-config]

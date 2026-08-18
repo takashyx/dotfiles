@@ -1,12 +1,13 @@
 # dotfiles
 
-Mac / Windows 共通の設定ファイルをモジュール単位(フォルダ単位)で管理する。
+Mac / Windows / WSL 共通の設定ファイルをモジュール単位(フォルダ単位)で管理する。
 
 ## 構成
 
 ``` text
 dotfiles/
 ├── setup.sh        # 配置エントリポイント (Mac): 各フォルダの setup.sh を順に実行
+├── setup.wsl.sh    # 配置エントリポイント (WSL): 各フォルダの setup.wsl.sh を順に実行
 ├── setup.ps1       # 配置エントリポイント (Windows): 各フォルダの setup.ps1 を順に実行
 ├── capture.sh      # 取り込みエントリポイント (Mac): 各フォルダの capture.sh を順に実行
 ├── capture.ps1     # 取り込みエントリポイント (Windows): 各フォルダの capture.ps1 を順に実行
@@ -14,12 +15,13 @@ dotfiles/
 │   ├── init.lua    # OS 共通設定 (IME 自動オフ)
 │   ├── setup.sh    # Mac 用: macism インストール + init.lua リンク
 │   └── setup.ps1   # Windows 用: zenhan 配置 + init.lua リンク
-├── zsh/            # zsh モジュール (Mac 専用)
+├── zsh/            # zsh モジュール (Mac / WSL)
 │   ├── .zshrc         # ~/.zshrc にリンク (sheldon の起動のみ)
 │   ├── plugins.toml   # ~/.config/sheldon/plugins.toml にリンク (sheldon の設定。powerlevel10k 等)
 │   ├── p10k.zsh       # ~/.p10k.zsh にリンク (`p10k configure` の生成物)
 │   ├── sync/          # sheldon が即時 source する実体設定 (*.zsh)
-│   └── setup.sh       # Mac 用: 上記のリンク + brew install powerlevel10k + フォント + ~/dotfiles リンクを作成
+│   ├── setup.sh       # Mac 用: 上記のリンク + brew install powerlevel10k + フォント + ~/dotfiles リンクを作成
+│   └── setup.wsl.sh   # WSL 用: 上記のリンク + sheldon / powerlevel10k 導入 + ~/dotfiles リンクを作成
 ├── font/           # フォントモジュール (Moralerspace Neon / Neon HW の両方)
 │   ├── setup.sh    # Mac 用: brew cask で導入
 │   └── setup.ps1   # Windows 用: リリース zip をユーザー領域へ展開 + HKCU 登録
@@ -36,14 +38,14 @@ dotfiles/
 
 | コマンド | 方向 | 用途 |
 | --- | --- | --- |
-| `setup.sh` / `setup.ps1` | リポジトリ → マシン | 新しいマシンに設定を展開する |
+| `setup.sh` / `setup.wsl.sh` / `setup.ps1` | リポジトリ → マシン | 新しいマシンに設定を展開する |
 | `capture.sh` / `capture.ps1` | マシン → リポジトリ | 手元で変えた設定をリポジトリに取り込む |
 
 > [!IMPORTANT]
 > `capture` は**リポジトリ側のファイルを現在のマシンの状態で上書きする**コマンドで、
 > 「リポジトリの最新をマシンに反映する」ものではない (それは `setup` の役割)。
 
-新しい設定を追加するときは、フォルダを作って `setup.sh` / `setup.ps1` を置くだけでよい。
+新しい設定を追加するときは、フォルダを作って `setup.sh` / `setup.wsl.sh` / `setup.ps1` を置くだけでよい。
 取り込みも自動化したければ、あわせて `capture.sh` / `capture.ps1` を置く
 (置かないモジュールは単にスキップされる)。
 
@@ -66,6 +68,16 @@ Mac:
 ```sh
 bash setup.sh
 ```
+
+WSL (WSL 内のシェルから):
+
+```sh
+bash setup.wsl.sh
+```
+
+リポジトリは Windows 側の `/mnt/c/...` にあるままでよい (各リンクがそこを指す)。
+シェルスクリプト類は `.gitattributes` で LF 固定にしてあるため、
+Windows でチェックアウトしても WSL の bash / zsh がそのまま読める。
 
 Windows (PowerShell):
 
@@ -133,11 +145,25 @@ vscode-neovim (VSCode / Cursor) やターミナル Neovim で、インサート�
 - Mac の初回切り替え時にアクセシビリティ権限を求められた場合は、
   VSCode (または使用中のターミナル) に権限を付与する
 
-## zsh モジュール: .zshrc の同期 (Mac 専用)
+## zsh モジュール: .zshrc の同期 (Mac / WSL)
 
 `zsh/.zshrc` を `~/.zshrc` に、`zsh/plugins.toml` ([sheldon](https://github.com/rossmacarthur/sheldon)
 の設定) を `~/.config/sheldon/plugins.toml` にそれぞれシンボリックリンクする。
 既存の実ファイルがあれば `.bak` に退避してからリンクを張る。
+
+Mac は `zsh/setup.sh`、WSL は `zsh/setup.wsl.sh` が担当する (それぞれ
+エントリポイント `setup.sh` / `setup.wsl.sh` から呼ばれる)。リンクの張り方は
+共通で、ツールの導入方法だけが異なる。
+
+| | Mac (`zsh/setup.sh`) | WSL (`zsh/setup.wsl.sh`) |
+| --- | --- | --- |
+| powerlevel10k | Homebrew (`brew install powerlevel10k`) | `~/.local/share/powerlevel10k` へ git clone |
+| sheldon | 手動導入 (`brew install sheldon`) | 未導入なら `~/.local/bin` へ自動導入 |
+| MesloLGS NF フォント | brew cask で導入 | Windows 側へ[手動導入](https://github.com/romkatv/powerlevel10k#fonts) (描画は Windows のターミナルが行うため) |
+
+powerlevel10k の置き場所が OS で異なるため、`plugins.toml` 側は inline
+プラグインで OS 判定してどちらかを source する。`.zshrc` は `~/.local/bin` を
+PATH に追加する (WSL の sheldon 用。Mac では実害なし)。
 
 さらに `~/dotfiles` をリポジトリ本体へのシンボリックリンクとして作成する。
 `plugins.toml` の `dotfiles-sync` プラグイン (`local = '~/dotfiles/zsh/sync'`)
@@ -152,7 +178,12 @@ vscode-neovim (VSCode / Cursor) やターミナル Neovim で、インサート�
 `local` プラグインとしてまとめて読み込む。各ファイルの詳細は
 [zsh/README.md](zsh/README.md) を参照。
 
-Windows 版は無いため、Windows のエントリポイントからは呼ばれない。
+WSL では WSL 内のシェルから `bash setup.wsl.sh` を実行する。zsh 本体が
+未導入の場合は警告を出すので、`sudo apt install zsh` の後、
+`chsh -s $(which zsh)` でログインシェルに設定する。
+
+Windows ネイティブ (PowerShell) 版は無いため、Windows のエントリポイント
+(`setup.ps1`) からは呼ばれない。
 
 ## vscode モジュール: 案内のみ
 
