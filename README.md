@@ -29,7 +29,7 @@ dotfiles/
 │   ├── setup.sh    # Mac 用: Settings Sync へ移行済みの NOTE を出力するだけ
 │   └── setup.ps1   # Windows 用: 同上
 └── autohotkey/     # AutoHotkey モジュール (Windows 専用)
-    ├── alt-ime_ahk_v3.ahk   # Alt 空打ちで IME 切替 (左=英数 / 右=かな)
+    ├── alt-ime_and_leftshiftesc-tilda_ahk_v3.ahk   # Alt 空打ちで IME 切替 (左=英数 / 右=かな) + Shift+Esc でチルダ
     ├── launch_alt-ime.bat   # .ahk 起動用ランチャ
     └── setup.ps1   # Windows 用: ~/dotfiles へ配置 + スタートアップ登録 (setup.sh なし = Mac ではスキップ)
 ```
